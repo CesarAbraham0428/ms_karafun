@@ -11,7 +11,6 @@ from karafun_manager.models.TagKFUN import TagKFUN
 from ms_karafun import config
 from karafun_manager.utils.print import _log_print
 import logging
-from karafun_manager.utils import logs
 logger = logging.getLogger(__name__)
 
 class KaraokeFunForm:

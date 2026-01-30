@@ -16,7 +16,11 @@ from karafun_manager.utils.print import _log_print
 from karafun_manager.models.Cancion import Cancion
 from karafun_manager.services.KaraokeFUNForm import KaraokeFunForm
 import logging
-from karafun_manager.utils import logs
+import traceback
+
+
+from karafun_manager.services.notification_service import NotificationService
+
 logger = logging.getLogger(__name__)
 
 def check_connection(request):
@@ -35,12 +39,18 @@ def sync_drive(request):
             def worker(key):
                 result = download_all_files(key)
                 return {'key': key, 'resultado': result}
+            
             with ThreadPoolExecutor(max_workers= cantidad) as executor:
                 futures = [executor.submit(worker, key) for key in keys]
                 for future in futures:
                     resultados.append(future.result())
             return JsonResponse({'success': True, 'message': '¡Archivos Sincronizados Correctamente!'})
         except Exception as e:
+            NotificationService.notificar_error({
+                "funcion": "sync_drive",
+                "error": str(e),
+                "traceback": traceback.format_exc()
+            })
             msg = _log_print("ERROR",f"{e}")
             logger.error(msg)
             return JsonResponse({'success': False, 'message': str(e)})
@@ -65,6 +75,11 @@ def subir_karafun(request):
                     resultados.append(future.result())
             return JsonResponse({'success': True, 'message': '¡Validación de Song.ini Completada!'})
         except Exception as e:
+            NotificationService.notificar_error({
+                "funcion": "subir_karafun",
+                "error": str(e),
+                "traceback": traceback.format_exc()
+            })
             msg = _log_print("ERROR",f"{e}")
             logger.error(msg)
             return JsonResponse({'success': False, 'message': str(e)})
@@ -82,6 +97,11 @@ def abrir_karafun(request):
                 return JsonResponse({"success": False, "message": "No hay KFN."})
             return JsonResponse(result)
         except Exception as e:
+            NotificationService.notificar_error({
+                "funcion": "abrir_karafun",
+                "error": str(e),
+                "traceback": traceback.format_exc()
+            })
             msg = _log_print("ERROR",f"{e}")
             logger.error(msg)
             return JsonResponse({'success': False, 'message': str(e)})
@@ -144,6 +164,11 @@ def crear_karafun(request):
             else:  # Error en la generación
                 return JsonResponse({'success': False, 'message': result[1]})
         except Exception as e:
+            NotificationService.notificar_error({
+                "funcion": "crear_karafun",
+                "error": str(e),
+                "traceback": traceback.format_exc()
+            })
             msg = _log_print("ERROR",f"{e}")
             logger.error(msg)
             return JsonResponse({'success': False, 'message': str(e)})
@@ -171,6 +196,13 @@ def verificar_recursos():
         logger.info(msg)
         return True
     except Exception as e:
+        NotificationService.notificar_error(
+            {
+                "funcion": "verificar_recursos",
+                "error": str(e),
+                "traceback": traceback.format_exc()
+            }
+        )
         msg = _log_print("ERROR",f"Fallo al verificar/extraer recursos: {e}")
         logger.error(msg)
         return False
@@ -186,6 +218,13 @@ def download_karaoke(request):
             result = download_k(key, drive_id, tipo)
             return JsonResponse(result)
         except Exception as e:
+            NotificationService.notificar_error(
+                {
+                    "funcion": "download_karaoke",
+                    "error": str(e),
+                    "traceback": traceback.format_exc()
+                }
+            )
             msg = _log_print("ERROR",f"{e}")
             logger.error(msg)
             return JsonResponse({'success': False, 'message': str(e)})
@@ -216,6 +255,13 @@ def delete_karaoke(request):
                 result = {"success": False, "message": msg}
             return JsonResponse(result)
         except Exception as e:
+            NotificationService.notificar_error(
+                {
+                    "funcion": "delete_karaoke",
+                    "error": str(e),
+                    "traceback": traceback.format_exc()
+                }
+            )
             msg = _log_print("ERROR",f"{e}")
             logger.error(msg)
             return JsonResponse({'success': False, 'message': str(e)})
@@ -230,6 +276,13 @@ def abrir_audacity(request):
             result = open_audacity(key)
             return JsonResponse(result)
         except Exception as e:
+            NotificationService.notificar_error(
+                {
+                    "funcion": "abrir_audacity",
+                    "error": str(e),
+                    "traceback": traceback.format_exc()
+                }
+            )
             msg = _log_print("ERROR",f"{e}")
             logger.error(msg)
             return JsonResponse({'success': False, 'message': str(e)})
@@ -244,6 +297,13 @@ def manipular_karafun(request):
             result = manipular_kfn(key)
             return JsonResponse(result)
         except Exception as e:
+            NotificationService.notificar_error(
+                {
+                    "funcion": "manipular_karafun",
+                    "error": str(e),
+                    "traceback": traceback.format_exc()
+                }
+            )
             msg = _log_print("ERROR",f"{e}")
             logger.error(msg)
             return JsonResponse({'success': False, 'message': str(e)})
@@ -264,6 +324,11 @@ def recrear_karafun(request):
             result = recrear_kfn(key, archivos, audio, fondo, opc)
             return JsonResponse(result)
         except Exception as e:
+            NotificationService.notificar_error({
+                "funcion": "recrear_karafun",
+                "error": str(e),
+                "traceback": traceback.format_exc()
+            })
             msg = _log_print("ERROR",f"{e}")
             logger.error(msg)
             return JsonResponse({'success': False, 'message': str(e)})
@@ -278,6 +343,13 @@ def abrir_carpeta(request):
             result = open_carpeta(key)
             return JsonResponse(result)
         except Exception as e:
+            NotificationService.notificar_error(
+                {
+                    "funcion": "abrir_carpeta",
+                    "error": str(e),
+                    "traceback": traceback.format_exc()
+                }
+            )
             msg = _log_print("ERROR",f"{e}")
             logger.error(msg)
             return JsonResponse({'success': False, 'message': str(e)})
@@ -292,6 +364,13 @@ def ver_archivos(request):
             result = view_files(key)
             return JsonResponse(result)
         except Exception as e:
+            NotificationService.notificar_error(
+                {
+                    "funcion": "ver_archivos",
+                    "error": str(e),
+                    "traceback": traceback.format_exc()
+                }
+            )
             msg = _log_print("ERROR",f"{e}")
             logger.error(msg)
             return JsonResponse({'success': False, 'message': str(e)})
@@ -323,6 +402,13 @@ def delete_carpeta(request):
                     executor.submit(worker, key)
             return JsonResponse({'success': True, 'message': '¡Archivo(s) Locales eliminados!'})
         except Exception as e:
+            NotificationService.notificar_error(
+                {
+                    "funcion": "delete_carpeta",
+                    "error": str(e),
+                    "traceback": traceback.format_exc()
+                }
+            )
             msg = _log_print("ERROR",f"{e}")
             logger.error(msg)
             return JsonResponse({'success': False, 'message': str(e)})
@@ -348,6 +434,13 @@ def comprobar_audio(request):
                     resultados.append(future.result())
             return JsonResponse({'success': True, 'message': '¡Audios Comprobados Correctamente!','resultados':resultados})
         except Exception as e:
+            NotificationService.notificar_error(
+                {
+                    "funcion": "comprobar_audio",
+                    "error": str(e),
+                    "traceback": traceback.format_exc()
+                }
+            )
             msg = _log_print("ERROR",f"{e}")
             logger.error(msg)
             return JsonResponse({'success': False, 'message': str(e)})
@@ -386,6 +479,13 @@ def comprobar_kfn(request):
                 'data': canciones_validas
             })
         except Exception as e:
+            NotificationService.notificar_error(
+                {
+                    "funcion": "comprobar_kfn",
+                    "error": str(e),
+                    "traceback": traceback.format_exc()
+                }
+            )
             msg = _log_print("ERROR",f"{e}")
             logger.error(msg)
             return JsonResponse({'success': False, 'message': str(e)})
@@ -412,6 +512,13 @@ def terminar_canciones(request):
                     resultados.append(future.result())
             return JsonResponse({'success': True, 'message': '¡Canciones Terminadas!','resultados':resultados})
         except Exception as e:
+            NotificationService.notificar_error(
+                {
+                    "funcion": "terminar_canciones",
+                    "error": str(e),
+                    "traceback": traceback.format_exc()
+                }
+            )
             msg = _log_print("ERROR",f"{e}")
             logger.error(msg)
             return JsonResponse({'success': False, 'message': str(e)})
